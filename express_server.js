@@ -42,7 +42,15 @@ app.post("/urls", (req, res) => {
   res.send("Ok");         // Respond with 'Ok' (we will replace this)
 });
 
-
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
+
+/*
+In order to simulate generating a "unique" shortURL, for now we will implement 
+a function that returns a string of 6 random alphanumeric characters:
+*/
+function generateRandomString() {
+  let string = Math.random().toString(36).slice(-6);
+  return string
+}
