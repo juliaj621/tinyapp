@@ -10,6 +10,8 @@
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
       </div>
     </div>
+    <!-- If the local (template) variable username is set/defined, display the username and a separate logout form which will POST to /logout. Otherwise, show the login form. -->
+    <% if (username === undefined) { %>
       <form class="form-center" method="POST" action="/urls/login" > 
         <div class="form-group mb-2">
           <label style="color: white" for="username">Login: </label>
@@ -17,5 +19,13 @@
           <button type="submit" class="btn btn-light">Login</button>
         </div>
       </form>
+      <% } else { %>
+        <form class="form-center" method="POST" action="/urls/logout" > 
+          <div class="form-group mb-2">
+            <label style="color: white; width: 200px; margin: 1em" for="username">Logged In As: <%= username %>!</label>
+            <button type="submit" class="btn btn-light">Logout</button>
+          </div>
+        </form>
+      <% } %>
   </nav>
 </header>
