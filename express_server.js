@@ -1,8 +1,10 @@
 const express = require("express");
+var cookieParser = require('cookie-parser')
 const app = express();
 const PORT = 8080; // default port 8080
 const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({extended: true}));
+app.use(cookieParser())
 
 app.set("view engine", "ejs"); // tells the Express app to use EJS as its templating engine
 
@@ -35,6 +37,14 @@ app.get("/urls/new", (req, res) => {
 app.get("/urls/:shortURL", (req, res) => {
   let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
   res.render("urls_show", templateVars);
+});
+
+app.post("/urls/login", (req, res) => {
+  console.log("hello")
+  console.log(req.body)
+  user = req.body.username
+  res.cookie('username', user);
+  res.redirect("/urls");
 });
 
 app.post("/urls/:shortURL", (req, res) => {
