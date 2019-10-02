@@ -8,18 +8,11 @@
       <div class="navbar-nav">
         <a class="nav-item nav-link" href="/urls">My URLs</a>
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
-        <a class="nav-item nav-link" href="/urls/register">Register</a>
       </div>
     </div>
-    <!-- If the local (template) variable username is set/defined, display the username and a separate logout form which will POST to /logout. Otherwise, show the login form. -->
     <% if (user === undefined) { %>
-      <form class="form-center" method="POST" action="/urls/login" > 
-        <div class="form-group mb-2">
-          <label style="color: white" for="email">Login: </label>
-          <input class="form-center" type="text" name="email" placeholder="email" style="width: 300px; margin: 1em">
-          <button type="submit" class="btn btn-light">Login</button>
-        </div>
-      </form>
+      <a style="color: white" class="nav-item nav-link" href="/urls/register">Register</a>
+        <a style="color: white" class="nav-item nav-link" href="/urls/login">Login</a>
       <% } else { %>
         <form class="form-center" method="POST" action="/urls/logout" > 
           <div class="form-group mb-2">

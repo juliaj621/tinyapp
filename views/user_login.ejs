@@ -11,8 +11,8 @@
 <body>
   <header> <% include ./partials/_header.ejs %> </header>
   <main style="margin: 1em;">
-    <h3>Create Account</h3>
-    <form class="form-center" method="POST" action="/urls/register">
+    <h3>Login</h3>
+    <form class="form-center" method="POST" action="/urls/login">
       <div class="form-group mb-2">
         <label for="register">Email address</label>
         <br>
@@ -22,7 +22,7 @@
         <br>
         <input class="form-center" type="password" name="password" placeholder="Password" style="width: 300px; margin: 1em">
         <br>
-        <button type="submit" class="btn btn-success">Register</button>
+        <button type="submit" class="btn btn-success">Login</button>
       </div>
     </form>
     <div>

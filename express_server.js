@@ -16,9 +16,13 @@ const urlDatabase = {
 const users = { 
   'ak49d2' : { id: 'ak49d2', 
   email: "juliaj621@gmail.com", 
-  password: "hello"}
+  password: "hello"},
+
+  'sn59dj' : { id: 'sn59dj', 
+  email: "j@gmail.com", 
+  password: "password"}
   
-}
+};
 
 app.get("/", (req, res) => {
   res.send("Hello!");
@@ -34,8 +38,6 @@ app.get("/hello", (req, res) => {
 
 app.get("/urls", (req, res) => {
   let templateVars = { urls: urlDatabase, user: users[req.cookies['user_id']] };
-  console.log(templateVars.user)
-  console.log(users)
   res.render("urls_index", templateVars);
 });
 
@@ -49,6 +51,11 @@ app.get("/urls/register", (req, res) => {
   res.render("user_registration", templateVars)
 });
 
+app.get("/urls/login", (req, res) => {
+  let templateVars = { user: users[req.cookies['user_id']] };
+  res.render("user_login", templateVars)
+});
+
 app.get("/urls/:shortURL", (req, res) => {
   let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], user: users[req.cookies['user_id']] };
   res.render("urls_show", templateVars);
@@ -57,11 +64,12 @@ app.get("/urls/:shortURL", (req, res) => {
 app.post("/urls/login", (req, res) => {
   for (let key in users) {
     const user = users[key]
-    if(req.body.email === user.email) {
+    if (req.body.email === user.email && req.body.password === user.password) {
       res.cookie('user_id', user.id)
+      return res.redirect("/urls");
     }
   }
-  res.redirect("/urls");
+  return res.sendStatus(403)  
 });
 
 app.post("/urls/logout", (req, res) => {
@@ -70,34 +78,29 @@ app.post("/urls/logout", (req, res) => {
 });
 
 app.post("/urls/register", (req, res) => {
-  let randomUserId = generateRandomString();
-  users[randomUserId] = { id: randomUserId, email: req.body.email, password: req.body.password}
+  if (req.body.email === "" || req.body.password === "") {
+    return res.sendStatus(400) // If the e-mail or password are empty strings, send back a response with the 400 status code.
+  }  
   for (let key in users) {
-    if (req.body.email === "" || req.body.password === "" || req.body.email === users[key].email) {
-      // If the e-mail or password are empty strings or if someone tries to register with an email that is already in the users object, send back a response with the 400 status code.
-      res.sendStatus(400)
-    } else {
-      // After adding the user, set a user_id cookie containing the user's newly generated ID.
-      res.cookie('user_id', users[randomUserId].id);
-      // Test that the users object is properly being appended to. 
-      console.log(users)
-      // Redirect the user to the /urls page.
-      res.redirect("/urls");
-    }
+    if (req.body.email === users[key].email) {
+      return res.sendStatus(400) // If someone tries to register with an email that is already in the users object, send back a response with the 400 status code.
+    } 
   }
+  let randomUserId = generateRandomString();
+  users[randomUserId] = { id: randomUserId, email: req.body.email, password: req.body.password} 
+  res.cookie('user_id', users[randomUserId].id); // After adding the user, set a user_id cookie containing the user's newly generated ID.
+  res.redirect("/urls"); // Redirect the user to the /urls page.
   // Consider creating an email lookup helper function to keep your code DRY
 });
 
 app.post("/urls/:shortURL", (req, res) => {
   urlDatabase[req.params.shortURL] = req.body.longURL;
   res.redirect("/urls");
-});
+}); 
 
 app.post("/urls", (req, res) => {
-  console.log(req.body);  // Log the POST request body to the console
   let createdShortUrl = generateRandomString();
   urlDatabase[createdShortUrl] = req.body.longURL; // Adds longURL and newly created shortURL to urlDatabase object
-  console.log(urlDatabase); // Log the updated object to the console
   res.redirect(`/urls/${createdShortUrl}`);         // Respond with 'Ok' (we will replace this)
 });
 
@@ -123,9 +126,3 @@ const generateRandomString =  function() {
   let string = Math.random().toString(36).slice(-6);
   return string;
 };
-
-
-// Edge Cases:
-// What would happen if a client requests a non-existent shortURL?
-// What happens to the urlDatabase when the server is restarted?
-// What type of status code do our redirects have? What does this status code mean?
