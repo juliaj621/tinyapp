@@ -13,6 +13,13 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
+const users = { 
+  'ak49d2' : { id: 'ak49d2', 
+  email: "juliaj621@gmail.com", 
+  password: "hello"}
+  
+}
+
 app.get("/", (req, res) => {
   res.send("Hello!");
 });
@@ -26,33 +33,62 @@ app.get("/hello", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
-  let templateVars = { urls: urlDatabase, username: req.cookies.username };
+  let templateVars = { urls: urlDatabase, user: users[req.cookies['user_id']] };
+  console.log(templateVars.user)
+  console.log(users)
   res.render("urls_index", templateVars);
 });
 
 app.get("/urls/new", (req, res) => {
-  let templateVars = { username: req.cookies.username };
+  let templateVars = { user: users[req.cookies['user_id']] };
   res.render("urls_new", templateVars);
 });
 
+app.get("/urls/register", (req, res) => {
+  let templateVars = { user: users[req.cookies['user_id']] };
+  res.render("user_registration", templateVars)
+});
+
 app.get("/urls/:shortURL", (req, res) => {
-  let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], username: req.cookies.username };
+  let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], user: users[req.cookies['user_id']] };
   res.render("urls_show", templateVars);
 });
 
 app.post("/urls/login", (req, res) => {
-  user = req.body.username
-  res.cookie('username', user);
+  for (let key in users) {
+    const user = users[key]
+    if(req.body.email === user.email) {
+      res.cookie('user_id', user.id)
+    }
+  }
   res.redirect("/urls");
 });
 
 app.post("/urls/logout", (req, res) => {
-  res.clearCookie('username')
+  res.clearCookie('user_id')
   res.redirect("/urls");
 });
 
+app.post("/urls/register", (req, res) => {
+  let randomUserId = generateRandomString();
+  users[randomUserId] = { id: randomUserId, email: req.body.email, password: req.body.password}
+  for (let key in users) {
+    if (req.body.email === "" || req.body.password === "" || req.body.email === users[key].email) {
+      // If the e-mail or password are empty strings or if someone tries to register with an email that is already in the users object, send back a response with the 400 status code.
+      res.sendStatus(400)
+    } else {
+      // After adding the user, set a user_id cookie containing the user's newly generated ID.
+      res.cookie('user_id', users[randomUserId].id);
+      // Test that the users object is properly being appended to. 
+      console.log(users)
+      // Redirect the user to the /urls page.
+      res.redirect("/urls");
+    }
+  }
+  // Consider creating an email lookup helper function to keep your code DRY
+});
+
 app.post("/urls/:shortURL", (req, res) => {
-  console.log("wrong")
   urlDatabase[req.params.shortURL] = req.body.longURL;
   res.redirect("/urls");
 });
