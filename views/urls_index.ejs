@@ -12,6 +12,10 @@
   <header> <% include ./partials/_header.ejs %> </header>
   <main style="margin: 1em;">
     <h3>My URLs</h3>
+    <% if (user === undefined) { %>
+      <div>Please<a href= "/urls/register"><button style="width: 100px; margin: 1em" type="submit" class="btn btn-info">Register</button></a>or
+        <a href= "/urls/login"><button style="width: 100px; margin: 1em" type="submit" class="btn btn-info">Login</button></a> to display your URLS</div>
+        <% } else { %>
     <table class="table">
       <thead>
         <tr>
@@ -25,13 +29,14 @@
         <% for(let url in urls) { %>
           <tr>
             <td><%= url %></td>
-            <td><%= urls[url] %></td>
+            <td><%= urls[url].longURL %></td>
             <td><form method="POST" action="/urls/<%= url %>/delete"><button type="submit" class="btn btn-danger">Delete</button></form></td>
             <td><a href= '/urls/<%= url %>'><button type="submit" class="btn btn-info">Edit</button></a></td>
           </tr>
         <% } %>
       </tbody>
     </table>
+    <% } %>
   </main>
   <!-- Bootstrap JS -->
   <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>

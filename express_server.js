@@ -9,9 +9,10 @@ app.use(cookieParser())
 app.set("view engine", "ejs"); // tells the Express app to use EJS as its templating engine
 
 const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  "b2xVn2": { longURL: "http://www.lighthouselabs.ca", userID: 'ak49d2' },
+  "9sm5xK": { longURL: "http://www.google.com", userID: 'sn59dj' }
 };
+
 
 const users = { 
   'ak49d2' : { id: 'ak49d2', 
@@ -43,7 +44,11 @@ app.get("/urls", (req, res) => {
 
 app.get("/urls/new", (req, res) => {
   let templateVars = { user: users[req.cookies['user_id']] };
+  if (templateVars.user === undefined) {
+    res.redirect("/urls/login")
+  } else {
   res.render("urls_new", templateVars);
+  }
 });
 
 app.get("/urls/register", (req, res) => {
@@ -57,7 +62,7 @@ app.get("/urls/login", (req, res) => {
 });
 
 app.get("/urls/:shortURL", (req, res) => {
-  let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], user: users[req.cookies['user_id']] };
+  let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL].longURL, user: users[req.cookies['user_id']] };
   res.render("urls_show", templateVars);
 });
 
@@ -100,7 +105,8 @@ app.post("/urls/:shortURL", (req, res) => {
 
 app.post("/urls", (req, res) => {
   let createdShortUrl = generateRandomString();
-  urlDatabase[createdShortUrl] = req.body.longURL; // Adds longURL and newly created shortURL to urlDatabase object
+  urlDatabase[createdShortUrl] = { longURL: req.body.longURL, userID: req.cookies['user_id'] } ; // Adds longURL and newly created shortURL to urlDatabase object
+  console.log(urlDatabase)
   res.redirect(`/urls/${createdShortUrl}`);         // Respond with 'Ok' (we will replace this)
 });
 
