@@ -4,7 +4,7 @@ const app = express();
 const PORT = 8080; // default port 8080
 const bodyParser = require("body-parser");
 const bcrypt = require('bcrypt');
-const { getUserByEmail, generateRandomString } = require('./helpers')
+const { getUserByEmail, generateRandomString } = require('./helpers');
 
 app.use(bodyParser.urlencoded({extended: true}));
 
@@ -17,37 +17,27 @@ app.use(cookieSession({
 
 app.set("view engine", "ejs"); // tells the Express app to use EJS as its templating engine
 
-const urlDatabase = {
-  // Objects for Test Purposes
-  // "b2xVn2": { longURL: "http://www.lighthouselabs.ca", userID: 'ak49d2' },
-  // "9sm5xK": { longURL: "http://www.google.com", userID: 'sn59dj' }
-};
+app.listen(PORT, () => {
+  console.log(`Example app listening on port ${PORT}!`);
+});
 
-const users = {
-  // Objects for Test Purposes
-  // 'ak49d2' : { id: 'ak49d2',
-  //   email: "juliaj621@gmail.com",
-  //   password: "hello"},
+const urlDatabase = { };
 
-  // 'sn59dj' : { id: 'sn59dj',
-  //   email: "j@gmail.com",
-  //   password: "password"}
-  
-};
+const users = { };
 
+// Takes user to the login page if not logged in or the home page if logged in when they access the general website
 app.get("/", (req, res) => {
-  res.send("Hello!");
+  let templateVars = { user: users[req.session['user_id']] };
+  if (templateVars.user === undefined) {
+    res.redirect("/urls/login");
+  } else {
+    res.redirect("/urls");
+  }
 });
 
-app.get("/urls.json", (req, res) => {
-  res.json(urlDatabase);
-});
-
-app.get("/hello", (req, res) => {
-  res.send("<html><body>Hello <b>World</b></body></html>\n");
-});
-
+// Takes user to the home page
 app.get("/urls", (req, res) => {
+  // function which uses the user_id to verfify that urls belong to the logged in user
   const urlsForUser = function() {
     let userURLDatabase = {};
     for (let key in urlDatabase) {
@@ -62,6 +52,7 @@ app.get("/urls", (req, res) => {
   res.render("urls_index", templateVars);
 });
 
+// Takes user to a page to create a new URL
 app.get("/urls/new", (req, res) => {
   let templateVars = { user: users[req.session['user_id']] };
   if (templateVars.user === undefined) {
@@ -71,35 +62,53 @@ app.get("/urls/new", (req, res) => {
   }
 });
 
+// Takes user to the register page
 app.get("/urls/register", (req, res) => {
   let templateVars = { user: users[req.session['user_id']] };
-  res.render("user_registration", templateVars);
+  if (templateVars.user === undefined) {
+    return res.render("user_registration", templateVars);
+  } else {
+    return res.redirect("/urls"); // If user tries to access register page while logged in, redirect to home page
+  }
 });
 
+// Takes user to the login page
 app.get("/urls/login", (req, res) => {
   let templateVars = { user: users[req.session['user_id']] };
-  res.render("user_login", templateVars);
+  if (templateVars.user === undefined) {
+    return res.render("user_login", templateVars);
+  } else {
+    return res.redirect("/urls"); // If user tries to access login page while logged in, redirect to home page
+  }
 });
 
+// Takes user to the page to view/update the created short url and its corresponding long url
 app.get("/urls/:shortURL", (req, res) => {
-  let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL].longURL, user: users[req.session['user_id']], fakeUser: urlDatabase[req.params.shortURL].userID };
-  res.render("urls_show", templateVars);
+  if (urlDatabase[req.params.shortURL] !== undefined) {
+    let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL].longURL, user: users[req.session['user_id']], fakeUser: urlDatabase[req.params.shortURL].userID };
+    return res.render("urls_show", templateVars);
+  } else {
+    return res.sendStatus(404); // If user tries to access a short url that doesn't exist, send back a response with the 400 status code.
+  }
 });
 
+// Ability for user to login with login form and button
 app.post("/urls/login", (req, res) => {
   let user = getUserByEmail(req.body.email, users);
   if (user !== undefined && bcrypt.compareSync(req.body.password, user.password)) {
     req.session['user_id'] = user.id;
     return res.redirect("/urls");
   }
-  return res.sendStatus(403);
+  return res.sendStatus(403); 
 });
 
+// Ability for user to logout with logout button
 app.post("/urls/logout", (req, res) => {
   req.session = null;
   res.redirect("/urls");
 });
 
+// Ability for user to register with login form and button
 app.post("/urls/register", (req, res) => {
   if (req.body.email === "" || req.body.password === "") {
     return res.sendStatus(400);
@@ -112,10 +121,11 @@ app.post("/urls/register", (req, res) => {
     req.session['user_id'] = users[randomUserId].id; // After adding the user, set a user_id cookie containing the user's newly generated ID.
     return res.redirect("/urls"); // Redirect the user to the /urls page.
   } else {
-    return res.sendStatus(400); // If someone tries to register with an email that is already in the users object, send back a response with the 400 status code.
+    return res.sendStatus(400); // If user tries to register with an email that is already in the users object, send back a response with the 400 status code.
   }
 });
 
+// Ability for user to update short urls with a different long url using the update button
 app.post("/urls/:shortURL", (req, res) => {
   let currentUser = req.session['user_id'];
   let urlOwner = urlDatabase[req.params.shortURL].userID;
@@ -125,17 +135,24 @@ app.post("/urls/:shortURL", (req, res) => {
   res.redirect("/urls");
 });
 
+// Ability for user to create new short urls
 app.post("/urls", (req, res) => {
   let createdShortUrl = generateRandomString();
   urlDatabase[createdShortUrl] = { longURL: req.body.longURL, userID: req.session['user_id'] };
   res.redirect(`/urls/${createdShortUrl}`);
 });
 
+// Takes you to the long url of the corresponding short url parameter that was entered
 app.get("/u/:shortURL", (req, res) => {
-  const longURL = urlDatabase[req.params.shortURL].longURL;
-  res.redirect(longURL);
+  if (urlDatabase[req.params.shortURL] !== undefined) {
+    const longURL = urlDatabase[req.params.shortURL].longURL;
+    return res.redirect(longURL);
+  } else {
+    return res.sendStatus(404);
+  }
 });
 
+// Ability for user to delete urls with the delete button
 app.post("/urls/:shortURL/delete", (req, res) => {
   let currentUser = req.session['user_id'];
   let urlOwner = urlDatabase[req.params.shortURL].userID;
@@ -143,8 +160,4 @@ app.post("/urls/:shortURL/delete", (req, res) => {
     delete urlDatabase[req.params.shortURL];
   }
   res.redirect("/urls");
-});
-
-app.listen(PORT, () => {
-  console.log(`Example app listening on port ${PORT}!`);
 });
