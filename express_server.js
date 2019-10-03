@@ -13,7 +13,6 @@ const urlDatabase = {
   "9sm5xK": { longURL: "http://www.google.com", userID: 'sn59dj' }
 };
 
-
 const users = { 
   'ak49d2' : { id: 'ak49d2', 
   email: "juliaj621@gmail.com", 
@@ -38,7 +37,18 @@ app.get("/hello", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
-  let templateVars = { urls: urlDatabase, user: users[req.cookies['user_id']] };
+  const urlsForUser = function () {
+    let userURLDatabase = {}
+    for (let key in urlDatabase) {
+      let shortURL = urlDatabase[key]
+      // for (let user in users) {
+        if (shortURL.userID === req.cookies['user_id']) {
+          userURLDatabase[key] = urlDatabase[key]
+        }
+    }
+    return userURLDatabase
+  };
+  let templateVars = { urls: urlsForUser(urlDatabase), user: users[req.cookies['user_id']] };
   res.render("urls_index", templateVars);
 });
 
@@ -62,6 +72,10 @@ app.get("/urls/login", (req, res) => {
 });
 
 app.get("/urls/:shortURL", (req, res) => {
+  /*
+  Similarly, this also means that the /urls/:id page should display a message or 
+  prompt if the user is not logged in, or if the the URL with the matching :id does not belong to them.
+  */
   let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL].longURL, user: users[req.cookies['user_id']] };
   res.render("urls_show", templateVars);
 });
@@ -106,12 +120,12 @@ app.post("/urls/:shortURL", (req, res) => {
 app.post("/urls", (req, res) => {
   let createdShortUrl = generateRandomString();
   urlDatabase[createdShortUrl] = { longURL: req.body.longURL, userID: req.cookies['user_id'] } ; // Adds longURL and newly created shortURL to urlDatabase object
-  console.log(urlDatabase)
+  // console.log(urlDatabase)
   res.redirect(`/urls/${createdShortUrl}`);         // Respond with 'Ok' (we will replace this)
 });
 
 app.get("/u/:shortURL", (req, res) => {
-  const longURL = urlDatabase[req.params.shortURL];
+  const longURL = urlDatabase[req.params.shortURL].longURL;
   res.redirect(longURL);
 });
 
