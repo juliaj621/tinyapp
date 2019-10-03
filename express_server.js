@@ -24,13 +24,13 @@ const urlDatabase = {
 
 const users = {
   // Objects for Test Purposes
-  // 'ak49d2' : { id: 'ak49d2',
-  // email: "juliaj621@gmail.com",
-  // password: "hello"},
+  'ak49d2' : { id: 'ak49d2',
+  email: "juliaj621@gmail.com",
+  password: "hello"},
 
-  // 'sn59dj' : { id: 'sn59dj',
-  // email: "j@gmail.com",
-  // password: "password"}
+  'sn59dj' : { id: 'sn59dj',
+  email: "j@gmail.com",
+  password: "password"}
   
 };
 
@@ -88,13 +88,11 @@ app.get("/urls/:shortURL", (req, res) => {
 });
 
 app.post("/urls/login", (req, res) => {
-  for (let key in users) {
-    const user = users[key];
-    if (req.body.email === user.email && bcrypt.compareSync(req.body.password, user.password)) {
+  let user = getUserByEmail(req.body.email, users)
+    if (bcrypt.compareSync(req.body.password, user.password)) {
       req.session['user_id'] = user.id;
       return res.redirect("/urls");
     }
-  }
   return res.sendStatus(403);
 });
 
@@ -105,20 +103,18 @@ app.post("/urls/logout", (req, res) => {
 
 app.post("/urls/register", (req, res) => {
   if (req.body.email === "" || req.body.password === "") {
-    return res.sendStatus(400); // If the e-mail or password are empty strings, send back a response with the 400 status code.
+    return res.sendStatus(400); // If the e-mail/password are empty strings, send back a response with the 400 status code.
   }
-  for (let key in users) {
-    if (req.body.email === users[key].email) {
+  let user = getUserByEmail(req.body.email, users)
+    if (user === undefined) {
+      let randomUserId = generateRandomString();
+      let hashPassword = bcrypt.hashSync((req.body.password), 10);
+      users[randomUserId] = { id: randomUserId, email: req.body.email, password: hashPassword};
+      req.session['user_id'] = users[randomUserId].id; // After adding the user, set a user_id cookie containing the user's newly generated ID.
+      return res.redirect("/urls"); // Redirect the user to the /urls page.
+    } else {
       return res.sendStatus(400); // If someone tries to register with an email that is already in the users object, send back a response with the 400 status code.
     }
-  }
-  let randomUserId = generateRandomString();
-  let hashPassword = bcrypt.hashSync((req.body.password), 10);
-  users[randomUserId] = { id: randomUserId, email: req.body.email, password: hashPassword};
-  // res.cookie('user_id', users[randomUserId].id); // After adding the user, set a user_id cookie containing the user's newly generated ID.
-  req.session['user_id'] = users[randomUserId].id;
-  res.redirect("/urls"); // Redirect the user to the /urls page.
-  // Consider creating an email lookup helper function to keep your code DRY
 });
 
 app.post("/urls/:shortURL", (req, res) => {
@@ -161,4 +157,14 @@ a function that returns a string of 6 random alphanumeric characters:
 const generateRandomString =  function() {
   let string = Math.random().toString(36).slice(-6);
   return string;
+};
+
+const getUserByEmail = function(email, database) {
+  for (let key in database) {
+    let user = database[key]
+    // console.log(user)
+    if (user.email === email){
+    return user;
+    }
+  }
 };
