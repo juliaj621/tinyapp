@@ -4,6 +4,7 @@ const app = express();
 const PORT = 8080; // default port 8080
 const bodyParser = require("body-parser");
 const bcrypt = require('bcrypt');
+const { getUserByEmail, generateRandomString } = require('./helpers')
 
 app.use(bodyParser.urlencoded({extended: true}));
 
@@ -147,21 +148,3 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
-
-/*
-In order to simulate generating a "unique" shortURL, for now we will implement
-a function that returns a string of 6 random alphanumeric characters:
-*/
-const generateRandomString =  function() {
-  let string = Math.random().toString(36).slice(-6);
-  return string;
-};
-
-const getUserByEmail = function(email, database) {
-  for (let key in database) {
-    let user = database[key];
-    if (user.email === email) {
-      return user;
-    }
-  }
-};
