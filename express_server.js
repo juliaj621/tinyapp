@@ -99,7 +99,7 @@ app.post("/urls/login", (req, res) => {
     req.session['user_id'] = user.id;
     return res.redirect("/urls");
   }
-  return res.sendStatus(403); 
+  return res.sendStatus(403);
 });
 
 // Ability for user to logout with logout button

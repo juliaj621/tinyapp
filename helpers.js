@@ -12,4 +12,4 @@ const generateRandomString =  function() {
   return string;
 };
 
-module.exports = { getUserByEmail, generateRandomString }
+module.exports = { getUserByEmail, generateRandomString };
