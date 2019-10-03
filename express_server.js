@@ -72,11 +72,8 @@ app.get("/urls/login", (req, res) => {
 });
 
 app.get("/urls/:shortURL", (req, res) => {
-  /*
-  Similarly, this also means that the /urls/:id page should display a message or 
-  prompt if the user is not logged in, or if the the URL with the matching :id does not belong to them.
-  */
-  let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL].longURL, user: users[req.cookies['user_id']] };
+  let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL].longURL, user: users[req.cookies['user_id']], fakeUser: urlDatabase[req.params.shortURL].userID };
+  console.log(templateVars.user)
   res.render("urls_show", templateVars);
 });
 
@@ -113,7 +110,11 @@ app.post("/urls/register", (req, res) => {
 });
 
 app.post("/urls/:shortURL", (req, res) => {
-  urlDatabase[req.params.shortURL] = req.body.longURL;
+  let currentUser = req.cookies['user_id']
+  let urlOwner = urlDatabase[req.params.shortURL].userID
+  if (currentUser === urlOwner) {
+    urlDatabase[req.params.shortURL].longURL = req.body.longURL;
+  } 
   res.redirect("/urls");
 }); 
 
@@ -130,7 +131,11 @@ app.get("/u/:shortURL", (req, res) => {
 });
 
 app.post("/urls/:shortURL/delete", (req, res) => {
+  let currentUser = req.cookies['user_id']
+  let urlOwner = urlDatabase[req.params.shortURL].userID
+  if (currentUser === urlOwner) {
   delete urlDatabase[req.params.shortURL];
+  }  
   res.redirect("/urls");
 })
 
