@@ -10,18 +10,20 @@ app.use(cookieParser())
 app.set("view engine", "ejs"); // tells the Express app to use EJS as its templating engine
 
 const urlDatabase = {
-  "b2xVn2": { longURL: "http://www.lighthouselabs.ca", userID: 'ak49d2' },
-  "9sm5xK": { longURL: "http://www.google.com", userID: 'sn59dj' }
+  // Objects for Test Purposes
+  // "b2xVn2": { longURL: "http://www.lighthouselabs.ca", userID: 'ak49d2' },
+  // "9sm5xK": { longURL: "http://www.google.com", userID: 'sn59dj' }
 };
 
 const users = { 
-  'ak49d2' : { id: 'ak49d2', 
-  email: "juliaj621@gmail.com", 
-  password: "hello"},
+  // Objects for Test Purposes
+  // 'ak49d2' : { id: 'ak49d2', 
+  // email: "juliaj621@gmail.com", 
+  // password: "hello"},
 
-  'sn59dj' : { id: 'sn59dj', 
-  email: "j@gmail.com", 
-  password: "password"}
+  // 'sn59dj' : { id: 'sn59dj', 
+  // email: "j@gmail.com", 
+  // password: "password"}
   
 };
 
@@ -80,8 +82,8 @@ app.get("/urls/:shortURL", (req, res) => {
 
 app.post("/urls/login", (req, res) => {
   for (let key in users) {
-    const user = users[key]
-    if (req.body.email === user.email && req.body.password === user.password) {
+    const user = users[key] 
+    if (req.body.email === user.email && bcrypt.compareSync(req.body.password, user.password)) {
       res.cookie('user_id', user.id)
       return res.redirect("/urls");
     }
@@ -104,7 +106,8 @@ app.post("/urls/register", (req, res) => {
     } 
   }
   let randomUserId = generateRandomString();
-  users[randomUserId] = { id: randomUserId, email: req.body.email, password: req.body.password} 
+  let hashPassword = bcrypt.hashSync((req.body.password), 10);
+  users[randomUserId] = { id: randomUserId, email: req.body.email, password: hashPassword} 
   res.cookie('user_id', users[randomUserId].id); // After adding the user, set a user_id cookie containing the user's newly generated ID.
   res.redirect("/urls"); // Redirect the user to the /urls page.
   // Consider creating an email lookup helper function to keep your code DRY
