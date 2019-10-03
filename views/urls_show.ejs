@@ -10,7 +10,7 @@
   <div class="card text-center">
       <div class="card-header"></div>
       <% if (user === undefined || user.id !== fakeUser) { %>
-        <div>Please<a href= "/urls/register"><button style="width: 100px; margin: 1em" type="submit" class="btn btn-info">Register</button></a>or
+        <div>You do not own this URL! Please<a href= "/urls/register"><button style="width: 100px; margin: 1em" type="submit" class="btn btn-info">Register</button></a>or
           <a href= "/urls/login"><button style="width: 100px; margin: 1em" type="submit" class="btn btn-info">Login</button></a> to display your URLS</div>
         <% } else { %>
       <div class="card-body">
