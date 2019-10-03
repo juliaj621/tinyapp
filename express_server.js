@@ -1,5 +1,5 @@
 const express = require("express");
-const cookieSession = require('cookie-session')
+const cookieSession = require('cookie-session');
 const app = express();
 const PORT = 8080; // default port 8080
 const bodyParser = require("body-parser");
@@ -24,13 +24,13 @@ const urlDatabase = {
 
 const users = {
   // Objects for Test Purposes
-  'ak49d2' : { id: 'ak49d2',
-  email: "juliaj621@gmail.com",
-  password: "hello"},
+  // 'ak49d2' : { id: 'ak49d2',
+  //   email: "juliaj621@gmail.com",
+  //   password: "hello"},
 
-  'sn59dj' : { id: 'sn59dj',
-  email: "j@gmail.com",
-  password: "password"}
+  // 'sn59dj' : { id: 'sn59dj',
+  //   email: "j@gmail.com",
+  //   password: "password"}
   
 };
 
@@ -51,7 +51,6 @@ app.get("/urls", (req, res) => {
     let userURLDatabase = {};
     for (let key in urlDatabase) {
       let shortURL = urlDatabase[key];
-      // for (let user in users) {
       if (shortURL.userID === req.session['user_id']) {
         userURLDatabase[key] = urlDatabase[key];
       }
@@ -83,38 +82,37 @@ app.get("/urls/login", (req, res) => {
 
 app.get("/urls/:shortURL", (req, res) => {
   let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL].longURL, user: users[req.session['user_id']], fakeUser: urlDatabase[req.params.shortURL].userID };
-  console.log(templateVars.user);
   res.render("urls_show", templateVars);
 });
 
 app.post("/urls/login", (req, res) => {
-  let user = getUserByEmail(req.body.email, users)
-    if (bcrypt.compareSync(req.body.password, user.password)) {
-      req.session['user_id'] = user.id;
-      return res.redirect("/urls");
-    }
+  let user = getUserByEmail(req.body.email, users);
+  if (user !== undefined && bcrypt.compareSync(req.body.password, user.password)) {
+    req.session['user_id'] = user.id;
+    return res.redirect("/urls");
+  }
   return res.sendStatus(403);
 });
 
 app.post("/urls/logout", (req, res) => {
-  req.session = null
+  req.session = null;
   res.redirect("/urls");
 });
 
 app.post("/urls/register", (req, res) => {
   if (req.body.email === "" || req.body.password === "") {
-    return res.sendStatus(400); // If the e-mail/password are empty strings, send back a response with the 400 status code.
+    return res.sendStatus(400);
   }
-  let user = getUserByEmail(req.body.email, users)
-    if (user === undefined) {
-      let randomUserId = generateRandomString();
-      let hashPassword = bcrypt.hashSync((req.body.password), 10);
-      users[randomUserId] = { id: randomUserId, email: req.body.email, password: hashPassword};
-      req.session['user_id'] = users[randomUserId].id; // After adding the user, set a user_id cookie containing the user's newly generated ID.
-      return res.redirect("/urls"); // Redirect the user to the /urls page.
-    } else {
-      return res.sendStatus(400); // If someone tries to register with an email that is already in the users object, send back a response with the 400 status code.
-    }
+  let user = getUserByEmail(req.body.email, users);
+  if (user === undefined) {
+    let randomUserId = generateRandomString();
+    let hashPassword = bcrypt.hashSync((req.body.password), 10);
+    users[randomUserId] = { id: randomUserId, email: req.body.email, password: hashPassword};
+    req.session['user_id'] = users[randomUserId].id; // After adding the user, set a user_id cookie containing the user's newly generated ID.
+    return res.redirect("/urls"); // Redirect the user to the /urls page.
+  } else {
+    return res.sendStatus(400); // If someone tries to register with an email that is already in the users object, send back a response with the 400 status code.
+  }
 });
 
 app.post("/urls/:shortURL", (req, res) => {
@@ -161,10 +159,9 @@ const generateRandomString =  function() {
 
 const getUserByEmail = function(email, database) {
   for (let key in database) {
-    let user = database[key]
-    // console.log(user)
-    if (user.email === email){
-    return user;
+    let user = database[key];
+    if (user.email === email) {
+      return user;
     }
   }
 };
