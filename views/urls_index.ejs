@@ -12,9 +12,9 @@
   <header> <% include ./partials/_header.ejs %> </header>
   <main style="margin: 1em;">
     <h3>My URLs</h3>
-    <% if (user === undefined) { %>
-      <div>Please<a href= "/urls/register"><button style="width: 100px; margin: 1em" type="submit" class="btn btn-info">Register</button></a>or
-        <a href= "/urls/login"><button style="width: 100px; margin: 1em" type="submit" class="btn btn-info">Login</button></a> to display your URLS</div>
+    <% if (!user) { %>
+      <div>Please<a href= "/register"><button style="width: 100px; margin: 1em" type="submit" class="btn btn-info">Register</button></a>or
+        <a href= "/login"><button style="width: 100px; margin: 1em" type="submit" class="btn btn-info">Login</button></a> to display your URLS</div>
         <% } else { %>
     <table class="table">
       <thead>
@@ -37,6 +37,7 @@
       </tbody>
     </table>
     <% } %>
+    <a href="/urls/new">Create a New Short Link!</a>
   </main>
   <!-- Bootstrap JS -->
   <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>

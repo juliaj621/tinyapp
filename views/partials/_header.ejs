@@ -10,11 +10,11 @@
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
       </div>
     </div>
-    <% if (user === undefined) { %>
-      <a style="color: white" class="nav-item nav-link" href="/urls/register">Register</a>
-        <a style="color: white" class="nav-item nav-link" href="/urls/login">Login</a>
+    <% if (!user) { %>
+      <a style="color: white" class="nav-item nav-link" href="/register">Register</a>
+        <a style="color: white" class="nav-item nav-link" href="/login">Login</a>
       <% } else { %>
-        <form class="form-center" method="POST" action="/urls/logout" > 
+        <form class="form-center" method="POST" action="/logout" > 
           <div class="form-group mb-2">
             <label style="color: white; width: 200px; margin: 1em" for="email">Logged In As: <%= user.email %>!</label>
             <button type="submit" class="btn btn-light">Logout</button>

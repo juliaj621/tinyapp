@@ -28,8 +28,8 @@ const users = { };
 // Takes user to the login page if not logged in or the home page if logged in when they access the general website
 app.get("/", (req, res) => {
   let templateVars = { user: users[req.session['user_id']] };
-  if (templateVars.user === undefined) {
-    res.redirect("/urls/login");
+  if (!templateVars.user) {
+    res.redirect("/login");
   } else {
     res.redirect("/urls");
   }
@@ -55,17 +55,17 @@ app.get("/urls", (req, res) => {
 // Takes user to a page to create a new URL
 app.get("/urls/new", (req, res) => {
   let templateVars = { user: users[req.session['user_id']] };
-  if (templateVars.user === undefined) {
-    res.redirect("/urls/login");
+  if (!templateVars.user) {
+    res.redirect("/login");
   } else {
     res.render("urls_new", templateVars);
   }
 });
 
 // Takes user to the register page
-app.get("/urls/register", (req, res) => {
+app.get("/register", (req, res) => {
   let templateVars = { user: users[req.session['user_id']] };
-  if (templateVars.user === undefined) {
+  if (!templateVars.user) {
     return res.render("user_registration", templateVars);
   } else {
     return res.redirect("/urls"); // If user tries to access register page while logged in, redirect to home page
@@ -73,9 +73,9 @@ app.get("/urls/register", (req, res) => {
 });
 
 // Takes user to the login page
-app.get("/urls/login", (req, res) => {
+app.get("/login", (req, res) => {
   let templateVars = { user: users[req.session['user_id']] };
-  if (templateVars.user === undefined) {
+  if (!templateVars.user) {
     return res.render("user_login", templateVars);
   } else {
     return res.redirect("/urls"); // If user tries to access login page while logged in, redirect to home page
@@ -93,7 +93,7 @@ app.get("/urls/:shortURL", (req, res) => {
 });
 
 // Ability for user to login with login form and button
-app.post("/urls/login", (req, res) => {
+app.post("/login", (req, res) => {
   let user = getUserByEmail(req.body.email, users);
   if (user !== undefined && bcrypt.compareSync(req.body.password, user.password)) {
     req.session['user_id'] = user.id;
@@ -103,18 +103,18 @@ app.post("/urls/login", (req, res) => {
 });
 
 // Ability for user to logout with logout button
-app.post("/urls/logout", (req, res) => {
+app.post("/logout", (req, res) => {
   req.session = null;
   res.redirect("/urls");
 });
 
 // Ability for user to register with login form and button
-app.post("/urls/register", (req, res) => {
+app.post("/register", (req, res) => {
   if (req.body.email === "" || req.body.password === "") {
     return res.sendStatus(400);
   }
   let user = getUserByEmail(req.body.email, users);
-  if (user === undefined) {
+  if (!user) {
     let randomUserId = generateRandomString();
     let hashPassword = bcrypt.hashSync((req.body.password), 10);
     users[randomUserId] = { id: randomUserId, email: req.body.email, password: hashPassword};
